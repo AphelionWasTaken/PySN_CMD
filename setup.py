@@ -6,7 +6,7 @@ build_exe_options = {'packages': ['requests','clint'],  'excludes': ['tkinter', 
 
 setup(
     name='PySN',
-    version='1.1.0',
+    version='1.2.0',
     description='PySN Title Update Utility',
     options={'build_exe': build_exe_options},
     executables=[Executable('PySN.py')],
