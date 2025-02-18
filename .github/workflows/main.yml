@@ -1,0 +1,53 @@
+name: Build Workflow
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  build-windows:
+    if: github.event.pull_request.merged == true
+    runs-on: [windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+      - name: Run cx_Freeze
+        run: |
+          python setup.py build
+      - name: Zip
+        run: |
+          Compress-Archive -Path "build/exe.win-amd64-3.9/*" -DestinationPath PySN.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PySN.zip
+          path: PySN.zip
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.2.0
+          release_name: v1.2.0
+          body: |
+            Adds support for "DRM Free" updates.
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: PySN.zip
+          asset_name: PySN.zip
+          asset_content_type: application/zip
